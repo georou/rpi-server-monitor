@@ -1,0 +1,12 @@
+[Unit]
+Description=Check server for online players
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+ExecStart=/usr/bin/python /home/pi/rpi-server-monitor.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
