@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import RPi.GPIO as GPIO 
-import time, sys, signal, requests 
+import time, sys, signal, requests, syslog
 from lxml import html
 
 
@@ -12,15 +12,14 @@ GPIO.setup(11, GPIO.OUT) # Setup GPIO Pin 11 to OUT
 
 # Catch SIGTERM signals and exit gracefully
 def signal_term_handler(signal, frame):
-    #print 'got SIGTERM'
     sys.exit(0)
 
 signal.signal(signal.SIGTERM, signal_term_handler)
 
 
 def coduo():
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    page = requests.get('https://www.gametracker.com/server_info/IP-ADDRESS', headers=headers)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'}
+    page = requests.get('https://www.gametracker.com/server_info/IP-ADDRESS/', headers=headers, timeout=15.000)
     tree = html.fromstring(page.content)
 
     # Get the element from it's XPath
@@ -37,8 +36,8 @@ def coduo():
 
 
 def cod2():
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    page = requests.get('https://www.gametracker.com/server_info/IP-ADDRESS', headers=headers)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36'}
+    page = requests.get('https://www.gametracker.com/server_info/IP-ADDRESS/', headers=headers, timeout=15.000)
     tree = html.fromstring(page.content)
 
     # Get the element from it's XPath
@@ -57,11 +56,15 @@ def cod2():
 if __name__ == '__main__':
 
     try:
-        while True:
+        while 1:
             coduo()
             cod2()
             time.sleep(302)
     except KeyboardInterrupt:
+        pass
+    except requests.ConnectionError:
+        page = "No response"
+        syslog.syslog('No internet connection - No page response')
         pass
     finally:
         GPIO.cleanup()
